@@ -116,26 +116,34 @@ def SIGINT_handler(signal, frame):
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, SIGINT_handler)
 
+    # wb
     if len(sys.argv) == 1:
         if not os.path.isfile(login_data_path):
-            print('之前未登录过，请先登录...')
-            (session, uid) = wblogin(new_login=True)
+            print('之前未登录过，请先登录（wb -l）...')
+            exit(-1)
         else:
             (session, uid) = wblogin()
+            text = input()
+            sender = WeiboSender(session, uid)
+            sender.send_weibo(text)
 
+    # wb -l
     elif len(sys.argv) == 2 and sys.argv[1] == '-l':
         (session, uid) = wblogin(new_login=True)
+        exit(0)
 
+    # wb -i
+    elif len(sys.argv) == 2 and sys.argv[1] == '-i':
+        while 1:
+            text = input('发微博（Ctrl-C 退出）> ')
+            sender = WeiboSender(session, uid)
+            sender.send_weibo(text)
+
+    # wb --help
     else:
         print('wbpy - 命令行交互式新浪微博客户端\n')
-        print('%-10s %-20s %s' % ('Usage:', 'wb', '直接登录（若之前登录过则免账号密码）'))
+        print('%-10s %-20s %s' % ('Usage:', 'wb', '使用上一次登录信息'))
         print('%-10s %-20s %s' % ('', 'wb -l', '第一次登录（强制重新登录）'))
         print('%-10s %-20s %s' % ('', 'echo haha | wb', '管道'))
         print('%-10s %-20s %s' % ('', 'wb < data.txt', '文件重定向'))
         exit(0)
-
-    sender = WeiboSender(session, uid)
-
-    while 1:
-        text = input('发微博> ')
-        sender.send_weibo(text)
